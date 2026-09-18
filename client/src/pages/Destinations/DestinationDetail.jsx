@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { getDestination, getAttractions } from '../../services/destinationService'
+import { getDestinationScores } from '../../services/scoringService'
 import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import { ScorePill, AccessibilityFeatures } from '../../components/AccessibilityBadge/AccessibilityBadge'
+import { DestinationScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
 import './DestinationDetail.css'
+
+const DestinationMap = lazy(() => import('../../components/Map/TripMap').then(m => ({ default: m.DestinationMap })))
+
 
 /* ─── Attraction card used inside detail ─── */
 function AttractionCard({ attraction, onFilter }) {
@@ -66,16 +71,18 @@ function DestinationDetail() {
   const { id }    = useParams()
   const navigate  = useNavigate()
 
-  const [destination, setDestination] = useState(null)
-  const [attractions, setAttractions] = useState([])
-  const [destLoading, setDestLoading] = useState(true)
-  const [attrLoading, setAttrLoading] = useState(true)
+  const [destination,  setDestination] = useState(null)
+  const [attractions,  setAttractions] = useState([])
+  const [destScoreData,setDestScoreData] = useState(null)
+  const [destLoading,  setDestLoading] = useState(true)
+  const [attrLoading,  setAttrLoading] = useState(true)
   const [error,        setError]       = useState('')
 
   // Attraction filters
   const [catFilter,  setCatFilter]  = useState('')
   const [diffFilter, setDiffFilter] = useState('')
   const [wcOnly,     setWcOnly]     = useState(false)
+  const [showMap,    setShowMap]    = useState(true)
 
   // Fetch destination
   useEffect(() => {
@@ -84,6 +91,14 @@ function DestinationDetail() {
       .catch(() => setError('Destination not found.'))
       .finally(() => setDestLoading(false))
   }, [id])
+
+  // Fetch destination score data once destination is loaded
+  useEffect(() => {
+    if (!destination) return
+    getDestinationScores(id)
+      .then((res) => setDestScoreData(res.data))
+      .catch(() => {}) // non-fatal
+  }, [destination, id])
 
   // Fetch attractions for this destination
   useEffect(() => {
@@ -164,11 +179,35 @@ function DestinationDetail() {
             />
           </div>
 
-          {/* Accessibility notes */}
+          {/* Accessibility notes + Score Card */}
           {destination.accessibilityNotes && (
             <div className="dest-detail__a11y-notes" role="note">
               <h2 className="dest-detail__notes-title">♿ Accessibility Notes</h2>
               <p>{destination.accessibilityNotes}</p>
+            </div>
+          )}
+
+          {/* Phase 6: Full Destination Accessibility Score Card */}
+          <DestinationScoreCard
+            destination={
+              destScoreData
+                ? { ...destination, ...destScoreData.scores }
+                : destination
+            }
+          />
+
+          {/* Attraction stats from scoring API */}
+          {destScoreData?.attractionStats?.total > 0 && (
+            <div className="dest-detail__attr-stats" role="region" aria-label="Attraction accessibility stats">
+              <h3 className="dest-detail__stats-title">📊 Attraction Accessibility Stats</h3>
+              <div className="dest-detail__stats-grid">
+                <StatBox icon="♿" label="Wheelchair" value={`${destScoreData.attractionStats.wheelchairAccessible}/${destScoreData.attractionStats.total}`} />
+                <StatBox icon="🛗" label="Elevator" value={`${destScoreData.attractionStats.elevatorAvailable}/${destScoreData.attractionStats.total}`} />
+                <StatBox icon="🚻" label="Restroom" value={`${destScoreData.attractionStats.accessibleRestroom}/${destScoreData.attractionStats.total}`} />
+                <StatBox icon="💺" label="Seating" value={`${destScoreData.attractionStats.seatingAvailable}/${destScoreData.attractionStats.total}`} />
+                <StatBox icon="🟢" label="Easy Walk" value={`${destScoreData.attractionStats.easyWalking}/${destScoreData.attractionStats.total}`} />
+                <StatBox icon="⭐" label="Avg Score" value={`${destScoreData.attractionStats.avgAttractionScore}/10`} />
+              </div>
             </div>
           )}
         </section>
@@ -179,10 +218,37 @@ function DestinationDetail() {
             <h2 id="attractions-heading" className="dest-detail__section-title">
               Attractions in {destination.name}
             </h2>
-            <span className="dest-detail__count">
-              {attrLoading ? '...' : `${attractions.length} found`}
-            </span>
+            <div className="dest-detail__header-actions">
+              <span className="dest-detail__count">
+                {attrLoading ? '...' : `${attractions.length} found`}
+              </span>
+              <button
+                type="button"
+                className="dest-detail__map-toggle-btn"
+                onClick={() => setShowMap((v) => !v)}
+              >
+                {showMap ? '🗺️ Hide Map' : '🗺️ View Map'}
+              </button>
+            </div>
           </div>
+
+          {/* Phase 7: Interactive Destination & Attractions Map */}
+          {showMap && (
+            <div className="dest-detail__map-section">
+              <Suspense fallback={
+                <div className="dest-detail__map-loading">
+                  <div className="dest-detail__map-spinner" aria-hidden="true" />
+                  <p>Loading interactive map…</p>
+                </div>
+              }>
+                <DestinationMap
+                  destination={destination}
+                  attractions={attractions}
+                  height="360px"
+                />
+              </Suspense>
+            </div>
+          )}
 
           {/* Attraction filters */}
           <div className="dest-detail__attr-filters" role="group" aria-label="Filter attractions">
@@ -264,6 +330,18 @@ function getDestinationEmoji(name) {
     kochi: '🌴', mysuru: '🏰', jaipur: '🎪', goa: '🏖️',
   }
   return map[name?.toLowerCase()] || '🗺️'
+}
+
+function StatBox({ icon, label, value }) {
+  return (
+    <div className="dest-detail__stat-box">
+      <span className="dest-detail__stat-icon" aria-hidden="true">{icon}</span>
+      <div>
+        <p className="dest-detail__stat-value">{value}</p>
+        <p className="dest-detail__stat-label">{label}</p>
+      </div>
+    </div>
+  )
 }
 
 export default DestinationDetail

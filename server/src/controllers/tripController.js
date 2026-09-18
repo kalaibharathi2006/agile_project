@@ -1,6 +1,8 @@
 const Trip = require('../models/Trip');
 const Itinerary = require('../models/Itinerary');
 const Attraction = require('../models/Attraction');
+const Hotel = require('../models/Hotel');
+const { computeTripScores } = require('../services/scoringService');
 
 // @desc    Create a new trip
 // @route   POST /api/trips
@@ -204,8 +206,15 @@ exports.generateItinerary = async (req, res, next) => {
       { new: true, upsert: true }
     );
 
-    // Update trip status
-    await Trip.findByIdAndUpdate(trip._id, { status: 'planned' });
+    // ── Phase 6: Compute & persist real accessibility scores ──
+    const hotel = trip.hotel ? await Hotel.findById(trip.hotel) : null;
+    const scores = computeTripScores(trip.travelRequirements || {}, attractions, hotel);
+    await Trip.findByIdAndUpdate(trip._id, {
+      status: 'planned',
+      accessibilityScore:      scores.accessibilityScore,
+      comfortScore:            scores.comfortScore,
+      overallSuitabilityScore: scores.overallSuitabilityScore,
+    });
 
     res.status(201).json({ success: true, data: itinerary });
   } catch (error) {

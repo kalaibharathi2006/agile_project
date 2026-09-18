@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { getAttraction } from '../../services/destinationService'
+import { getAttractionScores } from '../../services/scoringService'
 import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
+import { AttractionScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
 import { ScorePill, AccessibilityFeatures } from '../../components/AccessibilityBadge/AccessibilityBadge'
 import './AttractionDetail.css'
 
@@ -16,6 +18,7 @@ function AttractionDetail() {
   const navigate = useNavigate()
 
   const [attraction, setAttraction] = useState(null)
+  const [scoreData,  setScoreData]  = useState(null)
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState('')
 
@@ -25,6 +28,14 @@ function AttractionDetail() {
       .catch(() => setError('Attraction not found.'))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Fetch live scores once the attraction is loaded
+  useEffect(() => {
+    if (!attraction) return
+    getAttractionScores(id)
+      .then((res) => setScoreData(res.data))
+      .catch(() => {}) // non-fatal
+  }, [attraction, id])
 
   if (loading) return <Loading message="Loading attraction..." fullPage />
   if (error)   return (
@@ -116,38 +127,20 @@ function AttractionDetail() {
             </div>
           </section>
 
-          {/* Sidebar: Accessibility */}
+          {/* Sidebar: Full Accessibility Score Card */}
           <aside className="attr-detail__sidebar" aria-labelledby="a11y-heading">
-            <div className="attr-detail__a11y-card">
-              <h2 id="a11y-heading" className="attr-detail__a11y-title">
-                ♿ Accessibility Info
-              </h2>
-
-              <div className="attr-detail__score-row">
-                <ScorePill score={a.accessibilityScore || 0} max={10} label="Score" />
-                <span className={`attr-detail__difficulty attr-detail__difficulty--${a.walkingDifficulty || 'moderate'}`}>
-                  🚶 {a.walkingDifficulty || 'moderate'} walking
-                </span>
-              </div>
-
-              {a.surfaceType && (
-                <p className="attr-detail__surface">
-                  🛤️ Surface: <strong>{a.surfaceType}</strong>
-                </p>
-              )}
-
-              <div className="attr-detail__features-section">
-                <h3 className="attr-detail__features-heading">Facilities</h3>
-                <AccessibilityFeatures accessibility={a} size="md" />
-              </div>
-
-              {a.accessibilityNotes && (
-                <div className="attr-detail__a11y-notes" role="note">
-                  <h3 className="attr-detail__features-heading">Notes</h3>
-                  <p>{a.accessibilityNotes}</p>
-                </div>
-              )}
-            </div>
+            {/* Full score card using live API data */}
+            <AttractionScoreCard
+              accessibility={
+                // Merge live API scores into the DB accessibility object
+                scoreData
+                  ? {
+                      ...a,
+                      accessibilityScore: scoreData.scores?.overallScore ?? a.accessibilityScore,
+                    }
+                  : a
+              }
+            />
 
             {/* Tags */}
             {attraction.tags?.length > 0 && (

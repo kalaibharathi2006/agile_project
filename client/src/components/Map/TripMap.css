@@ -1,0 +1,206 @@
+/* ============================================================
+   TRIP MAP — Phase 7
+   ============================================================ */
+
+/* ─── Map container ─── */
+.trip-map__container {
+  width: 100%;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  border: 2px solid var(--color-gray-200);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── Leaflet popup override ─── */
+.map-popup {
+  padding: 2px 0;
+  min-width: 160px;
+}
+
+.map-popup__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  padding: 2px 8px;
+  border-radius: 99px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.map-popup__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.map-popup__sub {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.map-popup__score {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #15803d;
+  margin-top: 4px;
+}
+
+.map-popup__difficulty {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-top: 4px;
+}
+
+.map-popup__difficulty--easy     { background: #dcfce7; color: #16a34a; }
+.map-popup__difficulty--moderate { background: #fef9c3; color: #ca8a04; }
+.map-popup__difficulty--difficult{ background: #fee2e2; color: #dc2626; }
+
+/* ─── Custom map markers ─── */
+.map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.map-marker:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+.map-marker__emoji {
+  transform: rotate(45deg);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.map-marker__num {
+  transform: rotate(45deg);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.map-marker--numbered {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+}
+
+/* Colour variants */
+.map-marker--primary { background: var(--color-primary, #6366f1); }
+.map-marker--blue    { background: #3b82f6; }
+.map-marker--green   { background: #22c55e; }
+.map-marker--yellow  { background: #eab308; }
+.map-marker--purple  { background: #a855f7; }
+.map-marker--teal    { background: #14b8a6; }
+.map-marker--orange  { background: #f97316; }
+.map-marker--red     { background: #ef4444; }
+.map-marker--pink    { background: #ec4899; }
+.map-marker--gray    { background: #6b7280; }
+.map-marker--indigo  { background: #6366f1; }
+
+/* ─── Route summary panel ─── */
+.trip-map-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.trip-map__summary {
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+}
+
+.trip-map__summary-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.trip-map__summary-header h3 {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-gray-800);
+}
+
+.trip-map__summary-stats {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.trip-map__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.trip-map__stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.trip-map__stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+/* ─── Day legend ─── */
+.trip-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
+}
+
+.trip-map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.trip-map__legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Leaflet attribution fix ─── */
+.leaflet-control-attribution {
+  font-size: 10px !important;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .trip-map__summary-stats { gap: var(--space-4); }
+  .trip-map__stat-value    { font-size: var(--font-size-lg); }
+}

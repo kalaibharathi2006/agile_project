@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { getTrip, getItinerary, generateItinerary, deleteTrip } from '../../services/tripService'
+import { getTripScores } from '../../services/scoringService'
+import { getAttractions } from '../../services/destinationService'
+import { TripScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
 import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import Button from '../../components/Button/Button'
 import './TripDetail.css'
+
+// Lazy-load map to avoid SSR issues with Leaflet
+const TripMap = lazy(() => import('../../components/Map/TripMap').then(m => ({ default: m.TripMap })))
 
 /* ─── Item type config ─── */
 const TYPE_CONFIG = {
@@ -146,12 +152,16 @@ function TripDetail() {
   const { id }   = useParams()
   const navigate = useNavigate()
 
-  const [trip,      setTrip]      = useState(null)
-  const [itinerary, setItinerary] = useState(null)
-  const [loading,   setLoading]   = useState(true)
-  const [error,     setError]     = useState('')
-  const [regen,     setRegen]     = useState(false)
-  const [deleting,  setDeleting]  = useState(false)
+  const [trip,        setTrip]        = useState(null)
+  const [itinerary,   setItinerary]   = useState(null)
+  const [scoreData,   setScoreData]   = useState(null)
+  const [attractions, setAttractions] = useState([])
+  const [loading,     setLoading]     = useState(true)
+  const [scoreLoading,setScoreLoading]= useState(false)
+  const [error,       setError]       = useState('')
+  const [regen,       setRegen]       = useState(false)
+  const [deleting,    setDeleting]    = useState(false)
+  const [showMap,     setShowMap]     = useState(false)
 
   const fetchData = async () => {
     try {
@@ -169,13 +179,36 @@ function TripDetail() {
     }
   }
 
+  const fetchScores = async () => {
+    setScoreLoading(true)
+    try {
+      const res = await getTripScores(id)
+      setScoreData(res.data)
+    } catch {
+      // Non-fatal: scores may not be available yet
+    } finally {
+      setScoreLoading(false)
+    }
+  }
+
   useEffect(() => { fetchData() }, [id])
+  useEffect(() => { if (!loading && trip) fetchScores() }, [loading, trip])
+
+  // Fetch attractions for map once destination is known
+  useEffect(() => {
+    if (!trip?.destination?._id) return
+    getAttractions({ destination: trip.destination._id, limit: 30 })
+      .then((res) => setAttractions(res.data || []))
+      .catch(() => {})
+  }, [trip?.destination?._id])
 
   const handleRegenerate = async () => {
     setRegen(true)
     try {
       const res = await generateItinerary(id)
       setItinerary(res.data)
+      // Re-fetch scores after new itinerary is generated
+      fetchScores()
     } catch {
       setError('Failed to regenerate itinerary.')
     } finally {
@@ -274,21 +307,62 @@ function TripDetail() {
                 </Button>
               </div>
             ) : (
-              <div className="ti-days">
-                {Object.keys(byDay).sort((a, b) => Number(a) - Number(b)).map((day) => (
-                  <DaySection
-                    key={day}
-                    day={Number(day)}
-                    items={byDay[day]}
-                    tripStartDate={trip.startDate}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Day-wise itinerary */}
+                <div className="ti-days">
+                  {Object.keys(byDay).sort((a, b) => Number(a) - Number(b)).map((day) => (
+                    <DaySection
+                      key={day}
+                      day={Number(day)}
+                      items={byDay[day]}
+                      tripStartDate={trip.startDate}
+                    />
+                  ))}
+                </div>
+
+                {/* Phase 7: Interactive Map */}
+                <div className="td-map-section">
+                  <div className="td-map-header">
+                    <h2 className="td-section-title">🗺️ Trip Map</h2>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMap((v) => !v)}
+                      id="toggle-map-btn"
+                    >
+                      {showMap ? '🙈 Hide Map' : '🗺️ Show Map'}
+                    </Button>
+                  </div>
+
+                  {showMap && (
+                    <Suspense fallback={
+                      <div className="td-map-loading" role="status">
+                        <div className="td-map-loading__spinner" aria-hidden="true" />
+                        <p>Loading map…</p>
+                      </div>
+                    }>
+                      <TripMap
+                        destination={trip.destination}
+                        attractions={attractions}
+                        itinerary={itinerary}
+                        height="500px"
+                      />
+                    </Suspense>
+                  )}
+                </div>
+              </>
             )}
           </div>
 
           {/* Sidebar */}
-          <TripSummary trip={trip} />
+          <div className="td-sidebar">
+            <TripSummary trip={trip} />
+            <TripScoreCard
+              trip={trip}
+              scoreData={scoreData}
+              loading={scoreLoading}
+            />
+          </div>
         </div>
       </div>
     </main>

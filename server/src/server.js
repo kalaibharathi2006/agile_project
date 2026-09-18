@@ -16,7 +16,8 @@ const attractionRoutes = require('./routes/attractions');
 const tripRoutes = require('./routes/trips');
 const hotelRoutes = require('./routes/hotels');
 const reviewRoutes = require('./routes/reviews');
-const adminRoutes = require('./routes/admin');
+const adminRoutes   = require('./routes/admin');
+const scoringRoutes = require('./routes/scoring');
 
 // Connect to MongoDB
 connectDB();
@@ -57,7 +58,8 @@ app.use('/api/attractions', attractionRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/reviews', reviewRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin',   adminRoutes);
+app.use('/api/scoring', scoringRoutes);
 
 // Root
 app.get('/', (req, res) => {
