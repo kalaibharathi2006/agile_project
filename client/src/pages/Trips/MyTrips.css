@@ -1,0 +1,218 @@
+/* ============================================================
+   MY TRIPS PAGE
+   ============================================================ */
+
+.my-trips-page {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.mt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.mt-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-gray-900);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-1);
+}
+
+.mt-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/* Grid */
+.mt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-6);
+}
+
+/* Trip card */
+.mt-card {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-100);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary);
+}
+
+.mt-card__header {
+  height: 100px;
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, #f0fdf4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+}
+
+.mt-card__destination-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+/* Status badge */
+.mt-card__status {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.mt-card__status--gray   { background: var(--color-gray-100); color: var(--color-gray-600); }
+.mt-card__status--blue   { background: #eff6ff; color: var(--color-primary); }
+.mt-card__status--green  { background: var(--color-success-light); color: #15803d; }
+.mt-card__status--purple { background: #f5f3ff; color: #7c3aed; }
+.mt-card__status--red    { background: var(--color-danger-light); color: var(--color-danger); }
+
+/* Card body */
+.mt-card__body {
+  padding: var(--space-5) var(--space-6);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mt-card__title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.mt-card__title-link {
+  color: var(--color-gray-900);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.mt-card__title-link:hover { color: var(--color-primary); }
+
+.mt-card__dest {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+.mt-card__dates {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  font-weight: 500;
+  flex-wrap: wrap;
+}
+
+.mt-card__days {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+}
+
+.mt-card__meta {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  font-weight: 600;
+  flex-wrap: wrap;
+  margin-top: var(--space-1);
+}
+
+/* Footer */
+.mt-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+
+.mt-card__view-btn {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.mt-card__view-btn:hover {
+  background: var(--color-primary-bg);
+}
+
+.mt-card__delete-btn {
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: var(--color-gray-400);
+}
+
+.mt-card__delete-btn:hover {
+  background: var(--color-danger-light);
+  border-color: #fca5a5;
+  color: var(--color-danger);
+}
+
+/* Empty state */
+.mt-empty {
+  text-align: center;
+  padding: var(--space-20) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.mt-empty__icon {
+  font-size: 5rem;
+  display: block;
+}
+
+.mt-empty h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-gray-700);
+}
+
+.mt-empty p {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  max-width: 400px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .mt-grid { grid-template-columns: 1fr; }
+  .mt-header { flex-direction: column; }
+}

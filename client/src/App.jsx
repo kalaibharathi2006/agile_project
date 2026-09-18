@@ -12,8 +12,12 @@ import Profile from './pages/Profile/Profile'
 import Destinations from './pages/Destinations/Destinations'
 import DestinationDetail from './pages/Destinations/DestinationDetail'
 import AttractionDetail from './pages/Destinations/AttractionDetail'
+import MyTrips from './pages/Trips/MyTrips'
+import CreateTrip from './pages/Trips/CreateTrip'
+import TripDetail from './pages/Trips/TripDetail'
 
 import './App.css'
+
 
 function App() {
   return (
@@ -48,6 +52,33 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* ── Phase 5: Trip Planner (protected) ── */}
+          <Route
+            path="/trips"
+            element={
+              <ProtectedRoute>
+                <MyTrips />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trips/new"
+            element={
+              <ProtectedRoute>
+                <CreateTrip />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trips/:id"
+            element={
+              <ProtectedRoute>
+                <TripDetail />
+              </ProtectedRoute>
+            }
+          />
+
 
           {/* Catch-all → Home */}
           <Route path="*" element={<Navigate to="/" replace />} />

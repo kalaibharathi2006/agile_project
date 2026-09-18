@@ -1,0 +1,298 @@
+import { useState, useEffect } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { getTrip, getItinerary, generateItinerary, deleteTrip } from '../../services/tripService'
+import Loading from '../../components/Loading/Loading'
+import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
+import Button from '../../components/Button/Button'
+import './TripDetail.css'
+
+/* ─── Item type config ─── */
+const TYPE_CONFIG = {
+  attraction: { icon: '🏛️', color: 'blue',   label: 'Attraction' },
+  meal:       { icon: '🍽️', color: 'orange', label: 'Meal Break' },
+  rest:       { icon: '💺', color: 'green',  label: 'Rest Break' },
+  hotel:      { icon: '🏨', color: 'purple', label: 'Hotel' },
+  transport:  { icon: '🚌', color: 'teal',   label: 'Transport'  },
+  free:       { icon: '🌟', color: 'gray',   label: 'Free Time'  },
+}
+
+/* ─── Single itinerary item ─── */
+function ItineraryItem({ item }) {
+  const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.free
+  return (
+    <div className={`ti-item ti-item--${config.color}`} role="listitem">
+      <div className="ti-item__time-col">
+        <span className="ti-item__start">{item.startTime}</span>
+        <div className="ti-item__line" aria-hidden="true" />
+        <span className="ti-item__end">{item.endTime}</span>
+      </div>
+
+      <div className="ti-item__dot" aria-hidden="true">{config.icon}</div>
+
+      <div className="ti-item__body">
+        <div className="ti-item__header">
+          <h4 className="ti-item__title">{item.title}</h4>
+          <span className={`ti-item__badge ti-item__badge--${config.color}`}>{config.label}</span>
+        </div>
+
+        {item.description && <p className="ti-item__desc">{item.description}</p>}
+
+        <div className="ti-item__meta">
+          <span>⏱️ {item.durationMinutes} min</span>
+          {item.distanceFromPreviousMeters > 0 && (
+            <span>📏 {item.distanceFromPreviousMeters}m from prev</span>
+          )}
+          {item.transportMode && item.transportMode !== 'none' && (
+            <span>🚗 {item.transportMode}</span>
+          )}
+        </div>
+
+        {item.accessibilityNotes && (
+          <p className="ti-item__a11y-note">♿ {item.accessibilityNotes}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Day section ─── */
+function DaySection({ day, items, tripStartDate }) {
+  const date = tripStartDate
+    ? new Date(new Date(tripStartDate).getTime() + (day - 1) * 86400000)
+        .toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
+    : `Day ${day}`
+
+  const attractions = items.filter((i) => i.type === 'attraction').length
+  const meals       = items.filter((i) => i.isMealBreak).length
+  const rests       = items.filter((i) => i.isRestBreak).length
+
+  return (
+    <section className="ti-day" aria-labelledby={`day-${day}-heading`}>
+      <div className="ti-day__header">
+        <div>
+          <h3 id={`day-${day}-heading`} className="ti-day__title">Day {day}</h3>
+          <p className="ti-day__date">{date}</p>
+        </div>
+        <div className="ti-day__stats">
+          {attractions > 0 && <span>🏛️ {attractions} attractions</span>}
+          {meals > 0       && <span>🍽️ {meals} meals</span>}
+          {rests > 0       && <span>💺 {rests} rests</span>}
+        </div>
+      </div>
+      <div className="ti-day__items" role="list" aria-label={`Day ${day} itinerary`}>
+        {items.map((item, idx) => <ItineraryItem key={idx} item={item} />)}
+      </div>
+    </section>
+  )
+}
+
+/* ─── Trip summary card ─── */
+function TripSummary({ trip }) {
+  const days = trip.startDate && trip.endDate
+    ? Math.max(1, Math.round((new Date(trip.endDate) - new Date(trip.startDate)) / 86400000) + 1)
+    : 0
+
+  const r = trip.travelRequirements || {}
+
+  return (
+    <aside className="td-summary" aria-labelledby="trip-summary-heading">
+      <h2 id="trip-summary-heading" className="td-summary__title">Trip Summary</h2>
+
+      <div className="td-summary__grid">
+        <SummaryItem icon="🏛️" label="Destination"  value={trip.destination?.name || '—'} />
+        <SummaryItem icon="📅" label="Start Date"   value={new Date(trip.startDate).toLocaleDateString('en-IN')} />
+        <SummaryItem icon="📅" label="End Date"     value={new Date(trip.endDate).toLocaleDateString('en-IN')} />
+        <SummaryItem icon="🗓️" label="Duration"     value={`${days} day${days !== 1 ? 's' : ''}`} />
+        <SummaryItem icon="👥" label="Travelers"    value={`${trip.numberOfTravelers} person${trip.numberOfTravelers > 1 ? 's' : ''}`} />
+        <SummaryItem icon="🚶" label="Travel Pace"  value={r.travelPace || 'moderate'} />
+      </div>
+
+      <div className="td-summary__a11y">
+        <h3 className="td-summary__a11y-title">♿ Requirements</h3>
+        <div className="td-summary__badges">
+          {r.requiresWheelchair        && <span className="td-req-badge">♿ Wheelchair</span>}
+          {r.requiresElevator          && <span className="td-req-badge">🛗 Elevator</span>}
+          {r.requiresAccessibleRestroom && <span className="td-req-badge">🚻 Restroom</span>}
+          {r.requiresSeatingRest       && <span className="td-req-badge">💺 Seating</span>}
+          {!r.requiresWheelchair && !r.requiresElevator && !r.requiresAccessibleRestroom && !r.requiresSeatingRest && (
+            <span className="td-req-badge td-req-badge--none">No special requirements</span>
+          )}
+        </div>
+      </div>
+
+      <div className="td-summary__status">
+        <span className={`td-status td-status--${trip.status}`}>{trip.status}</span>
+      </div>
+    </aside>
+  )
+}
+
+function SummaryItem({ icon, label, value }) {
+  return (
+    <div className="td-summary__item">
+      <span aria-hidden="true">{icon}</span>
+      <div>
+        <p className="td-summary__label">{label}</p>
+        <p className="td-summary__value">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   MAIN TRIP DETAIL PAGE
+══════════════════════════════════════════ */
+function TripDetail() {
+  const { id }   = useParams()
+  const navigate = useNavigate()
+
+  const [trip,      setTrip]      = useState(null)
+  const [itinerary, setItinerary] = useState(null)
+  const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState('')
+  const [regen,     setRegen]     = useState(false)
+  const [deleting,  setDeleting]  = useState(false)
+
+  const fetchData = async () => {
+    try {
+      const [tripRes, itiRes] = await Promise.allSettled([
+        getTrip(id),
+        getItinerary(id),
+      ])
+      if (tripRes.status === 'fulfilled') setTrip(tripRes.value.data)
+      else setError('Trip not found.')
+      if (itiRes.status === 'fulfilled') setItinerary(itiRes.value.data)
+    } catch {
+      setError('Failed to load trip.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchData() }, [id])
+
+  const handleRegenerate = async () => {
+    setRegen(true)
+    try {
+      const res = await generateItinerary(id)
+      setItinerary(res.data)
+    } catch {
+      setError('Failed to regenerate itinerary.')
+    } finally {
+      setRegen(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this trip?')) return
+    setDeleting(true)
+    try {
+      await deleteTrip(id)
+      navigate('/trips')
+    } catch {
+      setError('Failed to delete trip.')
+      setDeleting(false)
+    }
+  }
+
+  if (loading) return <Loading message="Loading trip..." fullPage />
+  if (error && !trip) return (
+    <main className="container" style={{ paddingTop: '4rem' }}>
+      <ErrorMessage message={error} />
+      <Link to="/trips" className="td-back-link">← Back to My Trips</Link>
+    </main>
+  )
+
+  // Group itinerary items by day
+  const byDay = {}
+  if (itinerary?.items) {
+    itinerary.items.forEach((item) => {
+      if (!byDay[item.dayNumber]) byDay[item.dayNumber] = []
+      byDay[item.dayNumber].push(item)
+    })
+  }
+
+  return (
+    <main className="trip-detail-page">
+      <div className="container">
+        {/* Header */}
+        <div className="td-header animate-fade-in">
+          <div>
+            <nav aria-label="Breadcrumb">
+              <Link to="/trips" className="td-back-link">← My Trips</Link>
+            </nav>
+            <h1 className="td-title">{trip.title}</h1>
+            <p className="td-subtitle">
+              {trip.destination?.name} · {trip.destination?.state}
+            </p>
+          </div>
+          <div className="td-header-actions">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerate}
+              isLoading={regen}
+              id="regen-itinerary-btn"
+            >
+              🔄 Regenerate Itinerary
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDelete}
+              isLoading={deleting}
+              id="delete-trip-btn"
+            >
+              🗑️ Delete
+            </Button>
+          </div>
+        </div>
+
+        {error && <ErrorMessage message={error} onDismiss={() => setError('')} />}
+
+        <div className="td-layout">
+          {/* Itinerary */}
+          <div className="td-itinerary">
+            <div className="td-itinerary-header">
+              <h2 className="td-section-title">📅 Your Itinerary</h2>
+              {itinerary && (
+                <p className="td-itinerary-meta">
+                  {itinerary.totalDays} day{itinerary.totalDays !== 1 ? 's' : ''} ·
+                  Generated {new Date(itinerary.generatedAt).toLocaleDateString('en-IN')} ·
+                  v{itinerary.version}
+                </p>
+              )}
+            </div>
+
+            {!itinerary ? (
+              <div className="td-no-itinerary" role="status">
+                <span aria-hidden="true">📋</span>
+                <h3>No itinerary yet</h3>
+                <p>Click "Regenerate Itinerary" to generate your day-wise plan.</p>
+                <Button variant="primary" onClick={handleRegenerate} isLoading={regen} id="gen-itinerary-btn">
+                  🗺️ Generate Itinerary
+                </Button>
+              </div>
+            ) : (
+              <div className="ti-days">
+                {Object.keys(byDay).sort((a, b) => Number(a) - Number(b)).map((day) => (
+                  <DaySection
+                    key={day}
+                    day={Number(day)}
+                    items={byDay[day]}
+                    tripStartDate={trip.startDate}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <TripSummary trip={trip} />
+        </div>
+      </div>
+    </main>
+  )
+}
+
+export default TripDetail

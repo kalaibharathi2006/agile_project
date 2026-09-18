@@ -46,6 +46,14 @@ function Navbar() {
           </Link>
           {isAuthenticated && (
             <Link
+              to="/trips"
+              className={`navbar__link ${location.pathname.startsWith('/trips') ? 'navbar__link--active' : ''}`}
+            >
+              My Trips
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
               to="/dashboard"
               className={`navbar__link ${isActive('/dashboard') ? 'navbar__link--active' : ''}`}
             >
@@ -120,6 +128,15 @@ function Navbar() {
             >
               🏛️ Destinations
             </Link>
+            {isAuthenticated && (
+              <Link
+                to="/trips"
+                className="navbar__mobile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                🗺️ My Trips
+              </Link>
+            )}
             {isAuthenticated && (
               <Link
                 to="/dashboard"

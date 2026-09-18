@@ -115,13 +115,14 @@ function Dashboard() {
 }
 
 const QUICK_ACTIONS = [
-  { id: 'plan-trip-btn',     icon: '🗺️', title: 'Plan a Trip',          desc: 'Create a new accessible itinerary',     path: null },
+  { id: 'plan-trip-btn',     icon: '🗺️', title: 'Plan a Trip',          desc: 'Create a new accessible itinerary',     path: '/trips/new' },
   { id: 'browse-dest-btn',   icon: '🏛️', title: 'Explore Destinations',  desc: 'Browse accessible Indian destinations', path: '/destinations' },
   { id: 'find-hotels-btn',   icon: '🏨', title: 'Find Hotels',           desc: 'Discover wheelchair-friendly stays',    path: null },
-  { id: 'my-trips-btn',      icon: '📋', title: 'My Trips',              desc: 'View and manage your trips',           path: null },
+  { id: 'my-trips-btn',      icon: '📋', title: 'My Trips',              desc: 'View and manage your trips',           path: '/trips' },
   { id: 'edit-profile-btn',  icon: '👤', title: 'Edit Profile',          desc: 'Update accessibility preferences',     path: '/profile' },
   { id: 'write-review-btn',  icon: '⭐', title: 'Write a Review',        desc: 'Share your accessibility experience',  path: null },
 ]
+
 
 const STATS = [
   { icon: '🗺️', value: '0', label: 'Trips Planned' },
