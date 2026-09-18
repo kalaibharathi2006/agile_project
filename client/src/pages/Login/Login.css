@@ -1,0 +1,172 @@
+/* Shared auth page styles — used by both Login & Register */
+
+.auth-page {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  padding: var(--space-10);
+  border: 1px solid var(--color-gray-100);
+}
+
+/* --- Header --- */
+.auth-card__header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.auth-card__icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  line-height: 1;
+}
+
+.auth-card__title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.02em;
+}
+
+.auth-card__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  line-height: 1.5;
+}
+
+/* --- Form --- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+/* --- Footer --- */
+.auth-card__footer {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin-top: var(--space-5);
+}
+
+.auth-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.auth-link:hover {
+  color: var(--color-primary-dark);
+}
+
+/* --- Demo credentials box --- */
+.auth-demo {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  background: var(--color-gray-50);
+  border: 1px dashed var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.auth-demo__label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-1);
+}
+
+.auth-demo__cred {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  font-family: monospace;
+  font-weight: 500;
+}
+
+/* --- Divider --- */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-gray-400);
+  font-size: var(--font-size-sm);
+  margin: var(--space-2) 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-200);
+}
+
+/* --- Password strength indicator --- */
+.password-strength {
+  margin-top: -0.75rem;
+}
+
+.password-strength__bar-track {
+  height: 4px;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.password-strength__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.password-strength__bar-fill--weak   { background: var(--color-danger); }
+.password-strength__bar-fill--fair   { background: var(--color-accent); }
+.password-strength__bar-fill--good   { background: var(--color-secondary-light); }
+.password-strength__bar-fill--strong { background: var(--color-secondary); }
+
+.password-strength__label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.password-strength__label--weak   { color: var(--color-danger); }
+.password-strength__label--fair   { color: var(--color-accent); }
+.password-strength__label--good   { color: var(--color-secondary-light); }
+.password-strength__label--strong { color: var(--color-secondary); }
+
+/* --- Terms text --- */
+.auth-terms {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: -var(--space-2);
+}
+
+.auth-terms a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+  .auth-card {
+    padding: var(--space-8) var(--space-6);
+  }
+}

@@ -1,0 +1,51 @@
+.a11y-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.a11y-badge--sm {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+}
+
+.a11y-badge--md {
+  font-size: var(--font-size-sm);
+  padding: 4px 12px;
+}
+
+.a11y-badge--yes {
+  background: var(--color-success-light);
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.a11y-badge--no {
+  background: var(--color-gray-100);
+  color: var(--color-gray-400);
+  border: 1px solid var(--color-gray-200);
+  opacity: 0.7;
+}
+
+.a11y-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Score pill */
+.score-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.score-pill--high   { background: var(--color-success-light); color: #15803d; }
+.score-pill--medium { background: var(--color-warning-light);  color: #92400e; }
+.score-pill--low    { background: var(--color-danger-light);   color: #991b1b; }
