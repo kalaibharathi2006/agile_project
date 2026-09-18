@@ -2,11 +2,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar/Navbar'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
+
+// Pages
 import Home from './pages/Home/Home'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Profile from './pages/Profile/Profile'
+import Destinations from './pages/Destinations/Destinations'
+import DestinationDetail from './pages/Destinations/DestinationDetail'
+import AttractionDetail from './pages/Destinations/AttractionDetail'
+
 import './App.css'
 
 function App() {
@@ -15,12 +21,17 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          {/* Public routes */}
-          <Route path="/"         element={<Home />} />
-          <Route path="/login"    element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* ── Public routes ── */}
+          <Route path="/"          element={<Home />} />
+          <Route path="/login"     element={<Login />} />
+          <Route path="/register"  element={<Register />} />
 
-          {/* Protected routes */}
+          {/* Phase 4: Destination Discovery (public — browseable without login) */}
+          <Route path="/destinations"          element={<Destinations />} />
+          <Route path="/destinations/:id"      element={<DestinationDetail />} />
+          <Route path="/attractions/:id"       element={<AttractionDetail />} />
+
+          {/* ── Protected routes ── */}
           <Route
             path="/dashboard"
             element={
@@ -47,3 +58,4 @@ function App() {
 }
 
 export default App
+

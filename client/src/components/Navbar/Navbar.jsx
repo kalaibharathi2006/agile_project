@@ -38,6 +38,12 @@ function Navbar() {
           >
             Home
           </Link>
+          <Link
+            to="/destinations"
+            className={`navbar__link ${location.pathname.startsWith('/destinations') || location.pathname.startsWith('/attractions') ? 'navbar__link--active' : ''}`}
+          >
+            Destinations
+          </Link>
           {isAuthenticated && (
             <Link
               to="/dashboard"
@@ -106,6 +112,13 @@ function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               🏠 Home
+            </Link>
+            <Link
+              to="/destinations"
+              className="navbar__mobile-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              🏛️ Destinations
             </Link>
             {isAuthenticated && (
               <Link
