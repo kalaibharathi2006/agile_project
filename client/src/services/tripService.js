@@ -54,3 +54,28 @@ export const assignHotelToTrip = async (tripId, hotelId) => {
   return response.data
 }
 
+/** POST /api/trips/:id/itinerary/item — add new stop/break */
+export const addItineraryItem = async (tripId, itemData) => {
+  const response = await api.post(`/trips/${tripId}/itinerary/item`, itemData)
+  return response.data
+}
+
+/** PUT /api/trips/:id/itinerary/item/:itemId — modify stop/break */
+export const modifyItineraryItem = async (tripId, itemId, itemData) => {
+  const response = await api.put(`/trips/${tripId}/itinerary/item/${itemId}`, itemData)
+  return response.data
+}
+
+/** DELETE /api/trips/:id/itinerary/item/:itemId — delete stop */
+export const deleteItineraryItem = async (tripId, itemId) => {
+  const response = await api.delete(`/trips/${tripId}/itinerary/item/${itemId}`)
+  return response.data
+}
+
+/** POST /api/trips/:id/itinerary/adapt — smart adaptation & re-scoring */
+export const adaptItinerary = async (tripId) => {
+  const response = await api.post(`/trips/${tripId}/itinerary/adapt`)
+  return response.data
+}
+
+

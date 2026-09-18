@@ -1,12 +1,25 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getTrip, getItinerary, generateItinerary, deleteTrip, assignHotelToTrip } from '../../services/tripService'
+import {
+  getTrip,
+  getItinerary,
+  generateItinerary,
+  deleteTrip,
+  updateTrip,
+  assignHotelToTrip,
+  addItineraryItem,
+  modifyItineraryItem,
+  deleteItineraryItem,
+  adaptItinerary,
+} from '../../services/tripService'
 import { getTripScores } from '../../services/scoringService'
 import { getAttractions } from '../../services/destinationService'
 import { TripScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
 import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import Button from '../../components/Button/Button'
+import EditTripModal from './EditTripModal'
+import EditItemModal from './EditItemModal'
 import './TripDetail.css'
 
 // Lazy-load map to avoid SSR issues with Leaflet
@@ -23,7 +36,7 @@ const TYPE_CONFIG = {
 }
 
 /* ─── Single itinerary item ─── */
-function ItineraryItem({ item }) {
+function ItineraryItem({ item, onEdit, onDelete }) {
   const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.free
   return (
     <div className={`ti-item ti-item--${config.color}`} role="listitem">
@@ -57,12 +70,34 @@ function ItineraryItem({ item }) {
           <p className="ti-item__a11y-note">♿ {item.accessibilityNotes}</p>
         )}
       </div>
+
+      {/* Phase 9: Item quick actions */}
+      <div className="ti-item__actions">
+        <button
+          type="button"
+          className="ti-item__action-btn"
+          onClick={() => onEdit(item)}
+          title="Edit stop timing / transport"
+          aria-label={`Edit ${item.title}`}
+        >
+          ✏️
+        </button>
+        <button
+          type="button"
+          className="ti-item__action-btn ti-item__action-btn--delete"
+          onClick={() => onDelete(item._id)}
+          title="Remove from itinerary"
+          aria-label={`Remove ${item.title}`}
+        >
+          🗑️
+        </button>
+      </div>
     </div>
   )
 }
 
 /* ─── Day section ─── */
-function DaySection({ day, items, tripStartDate }) {
+function DaySection({ day, items, tripStartDate, onEditItem, onDeleteItem, onAddItem }) {
   const date = tripStartDate
     ? new Date(new Date(tripStartDate).getTime() + (day - 1) * 86400000)
         .toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -79,14 +114,31 @@ function DaySection({ day, items, tripStartDate }) {
           <h3 id={`day-${day}-heading`} className="ti-day__title">Day {day}</h3>
           <p className="ti-day__date">{date}</p>
         </div>
-        <div className="ti-day__stats">
-          {attractions > 0 && <span>🏛️ {attractions} attractions</span>}
-          {meals > 0       && <span>🍽️ {meals} meals</span>}
-          {rests > 0       && <span>💺 {rests} rests</span>}
+        <div className="ti-day__header-right">
+          <div className="ti-day__stats">
+            {attractions > 0 && <span>🏛️ {attractions} attractions</span>}
+            {meals > 0       && <span>🍽️ {meals} meals</span>}
+            {rests > 0       && <span>💺 {rests} rests</span>}
+          </div>
+          <button
+            type="button"
+            className="ti-day__add-btn"
+            onClick={() => onAddItem(day)}
+            aria-label={`Add stop to Day ${day}`}
+          >
+            ➕ Add Stop
+          </button>
         </div>
       </div>
       <div className="ti-day__items" role="list" aria-label={`Day ${day} itinerary`}>
-        {items.map((item, idx) => <ItineraryItem key={idx} item={item} />)}
+        {items.map((item, idx) => (
+          <ItineraryItem
+            key={item._id || idx}
+            item={item}
+            onEdit={onEditItem}
+            onDelete={onDeleteItem}
+          />
+        ))}
       </div>
     </section>
   )
@@ -229,7 +281,12 @@ function TripDetail() {
   const [error,       setError]       = useState('')
   const [regen,       setRegen]       = useState(false)
   const [deleting,    setDeleting]    = useState(false)
-  const [showMap,     setShowMap]     = useState(false)
+  const [showMap,           setShowMap]           = useState(false)
+  const [showEditTripModal, setShowEditTripModal] = useState(false)
+  const [showEditItemModal, setShowEditItemModal] = useState(false)
+  const [activeEditItem,    setActiveEditItem]    = useState(null)
+  const [activeDayNumber,   setActiveDayNumber]   = useState(1)
+  const [adapting,          setAdapting]          = useState(false)
 
   const fetchData = async () => {
     try {
@@ -306,6 +363,62 @@ function TripDetail() {
     }
   }
 
+  // ─── Phase 9: Trip & Itinerary modification handlers ───
+  const handleSaveTrip = async (formData) => {
+    const res = await updateTrip(id, formData)
+    setTrip(res.data)
+    fetchData()
+    fetchScores()
+  }
+
+  const handleSmartAdapt = async () => {
+    setAdapting(true)
+    try {
+      const res = await adaptItinerary(id)
+      setItinerary(res.data)
+      if (res.scores) setScoreData((prev) => ({ ...prev, scores: res.scores }))
+      fetchScores()
+    } catch {
+      setError('Failed to adapt itinerary timing.')
+    } finally {
+      setAdapting(false)
+    }
+  }
+
+  const handleOpenAddItem = (day) => {
+    setActiveEditItem(null)
+    setActiveDayNumber(day)
+    setShowEditItemModal(true)
+  }
+
+  const handleOpenEditItem = (item) => {
+    setActiveEditItem(item)
+    setActiveDayNumber(item.dayNumber || 1)
+    setShowEditItemModal(true)
+  }
+
+  const handleSaveItem = async (itemData) => {
+    if (activeEditItem) {
+      const res = await modifyItineraryItem(id, activeEditItem._id, itemData)
+      setItinerary(res.data)
+    } else {
+      const res = await addItineraryItem(id, itemData)
+      setItinerary(res.data)
+    }
+    fetchScores()
+  }
+
+  const handleDeleteItem = async (itemId) => {
+    if (!window.confirm('Remove this stop from your itinerary?')) return
+    try {
+      const res = await deleteItineraryItem(id, itemId)
+      setItinerary(res.data)
+      fetchScores()
+    } catch {
+      setError('Failed to delete itinerary stop.')
+    }
+  }
+
   if (loading) return <Loading message="Loading trip..." fullPage />
   if (error && !trip) return (
     <main className="container" style={{ paddingTop: '4rem' }}>
@@ -341,11 +454,29 @@ function TripDetail() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setShowEditTripModal(true)}
+              id="edit-trip-btn"
+            >
+              ✏️ Edit Trip
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSmartAdapt}
+              isLoading={adapting}
+              id="adapt-itinerary-btn"
+              title="Recalculate times sequentially and re-score"
+            >
+              ⚡ Smart Adapt
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleRegenerate}
               isLoading={regen}
               id="regen-itinerary-btn"
             >
-              🔄 Regenerate Itinerary
+              🔄 Regenerate
             </Button>
             <Button
               variant="danger"
@@ -394,6 +525,9 @@ function TripDetail() {
                       day={Number(day)}
                       items={byDay[day]}
                       tripStartDate={trip.startDate}
+                      onEditItem={handleOpenEditItem}
+                      onDeleteItem={handleDeleteItem}
+                      onAddItem={handleOpenAddItem}
                     />
                   ))}
                 </div>
@@ -444,6 +578,23 @@ function TripDetail() {
           </div>
         </div>
       </div>
+
+      {/* Phase 9 Modals */}
+      <EditTripModal
+        trip={trip}
+        isOpen={showEditTripModal}
+        onClose={() => setShowEditTripModal(false)}
+        onSave={handleSaveTrip}
+      />
+
+      <EditItemModal
+        isOpen={showEditItemModal}
+        onClose={() => setShowEditItemModal(false)}
+        onSave={handleSaveItem}
+        item={activeEditItem}
+        defaultDay={activeDayNumber}
+        totalDays={itinerary?.totalDays || 1}
+      />
     </main>
   )
 }

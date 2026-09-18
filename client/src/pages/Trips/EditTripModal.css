@@ -1,0 +1,189 @@
+/* ============================================================
+   EDIT TRIP MODAL — Phase 9
+   ============================================================ */
+
+.etm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.etm-modal {
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-6);
+  position: relative;
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  flex-direction: column;
+}
+
+.etm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.etm-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.etm-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin: 2px 0 0 0;
+}
+
+.etm-close {
+  background: var(--color-gray-100);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--color-gray-600);
+}
+
+.etm-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--space-4);
+}
+
+.etm-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.etm-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.etm-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.etm-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.etm-input,
+.etm-select {
+  height: 42px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-300);
+  background: var(--color-gray-50);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  outline: none;
+}
+
+.etm-input:focus,
+.etm-select:focus {
+  border-color: var(--color-primary);
+  background: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.etm-duration-badge {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.etm-a11y-section {
+  background: var(--color-gray-50);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-gray-200);
+}
+
+.etm-a11y-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-gray-700);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.etm-checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.etm-check-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+.etm-check-card--active {
+  border-color: var(--color-primary);
+  background: #eef2ff;
+  color: var(--color-primary-dark);
+}
+
+.etm-check-tick {
+  margin-left: auto;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.etm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-100);
+}
+
+@media (max-width: 600px) {
+  .etm-row {
+    grid-template-columns: 1fr;
+  }
+  .etm-checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}

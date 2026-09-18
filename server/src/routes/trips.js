@@ -30,4 +30,18 @@ router.get('/:id/itinerary', protect, tripController.getItinerary);
 // @route   PUT /api/trips/:id/itinerary
 router.put('/:id/itinerary', protect, tripController.updateItinerary);
 
+// ─── Phase 9: Trip Modification & Itinerary Adaptation ───
+// @route   POST /api/trips/:id/itinerary/item
+router.post('/:id/itinerary/item', protect, tripController.addItineraryItem);
+
+// @route   PUT /api/trips/:id/itinerary/item/:itemId
+router.put('/:id/itinerary/item/:itemId', protect, tripController.modifyItineraryItem);
+
+// @route   DELETE /api/trips/:id/itinerary/item/:itemId
+router.delete('/:id/itinerary/item/:itemId', protect, tripController.deleteItineraryItem);
+
+// @route   POST /api/trips/:id/itinerary/adapt
+router.post('/:id/itinerary/adapt', protect, tripController.adaptItinerary);
+
 module.exports = router;
+
