@@ -69,6 +69,29 @@ exports.updateTrip = async (req, res, next) => {
   }
 };
 
+// @desc    Assign or remove hotel from trip
+// @route   PUT /api/trips/:id/hotel
+// @access  Private
+exports.assignHotel = async (req, res, next) => {
+  try {
+    const { hotelId } = req.body;
+    const update = hotelId ? { hotel: hotelId } : { $unset: { hotel: 1 } };
+    const trip = await Trip.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      update,
+      { new: true }
+    ).populate('destination').populate('hotel');
+
+    if (!trip) {
+      return res.status(404).json({ success: false, message: 'Trip not found.' });
+    }
+    res.status(200).json({ success: true, data: trip });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // @desc    Delete a trip
 // @route   DELETE /api/trips/:id
 // @access  Private

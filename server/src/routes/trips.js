@@ -15,6 +15,9 @@ router.get('/:id', protect, tripController.getTrip);
 // @route   PUT /api/trips/:id
 router.put('/:id', protect, tripController.updateTrip);
 
+// @route   PUT /api/trips/:id/hotel
+router.put('/:id/hotel', protect, tripController.assignHotel);
+
 // @route   DELETE /api/trips/:id
 router.delete('/:id', protect, tripController.deleteTrip);
 

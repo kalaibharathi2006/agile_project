@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getTrip, getItinerary, generateItinerary, deleteTrip } from '../../services/tripService'
+import { getTrip, getItinerary, generateItinerary, deleteTrip, assignHotelToTrip } from '../../services/tripService'
 import { getTripScores } from '../../services/scoringService'
 import { getAttractions } from '../../services/destinationService'
 import { TripScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
@@ -145,6 +145,74 @@ function SummaryItem({ icon, label, value }) {
   )
 }
 
+/* ─── Phase 8: Trip Hotel accommodation card ─── */
+function TripHotelCard({ trip, onRemoveHotel }) {
+  const hotel = trip.hotel
+  const destId = trip.destination?._id || trip.destination
+
+  return (
+    <aside className="td-hotel-card" aria-labelledby="hotel-card-heading">
+      <div className="td-hotel-card__header">
+        <h2 id="hotel-card-heading" className="td-hotel-card__title">🏨 Accommodation</h2>
+        {hotel && (
+          <Link to={`/hotels/${hotel._id}`} className="td-hotel-link">View Details</Link>
+        )}
+      </div>
+
+      {hotel ? (
+        <div className="td-hotel-content">
+          <div className="td-hotel-info">
+            <h3 className="td-hotel-name">
+              <Link to={`/hotels/${hotel._id}`}>{hotel.name}</Link>
+            </h3>
+            <p className="td-hotel-rating">
+              {'⭐'.repeat(hotel.starRating || 3)}
+              {hotel.priceCategory && <span className={`td-hotel-cat td-hotel-cat--${hotel.priceCategory}`}>{hotel.priceCategory}</span>}
+            </p>
+            {hotel.address && <p className="td-hotel-address">📍 {hotel.address}</p>}
+            {hotel.pricePerNight > 0 && (
+              <p className="td-hotel-price">
+                ₹{hotel.pricePerNight.toLocaleString('en-IN')} <small>/ night</small>
+              </p>
+            )}
+          </div>
+
+          {/* Quick a11y badges */}
+          {hotel.accessibility && (
+            <div className="td-hotel-a11y">
+              {hotel.accessibility.wheelchairAccessible && <span className="td-badge-pill">♿ Wheelchair</span>}
+              {hotel.accessibility.elevatorAvailable    && <span className="td-badge-pill">🛗 Elevator</span>}
+              {hotel.accessibility.accessibleRooms      && <span className="td-badge-pill">🛏️ Rooms</span>}
+              {hotel.accessibility.accessibleRestroom   && <span className="td-badge-pill">🚻 Bath</span>}
+            </div>
+          )}
+
+          <div className="td-hotel-actions">
+            <Link to={`/hotels?destination=${destId}`}>
+              <Button variant="outline" size="sm">Change Hotel</Button>
+            </Link>
+            <button
+              type="button"
+              className="td-hotel-remove-btn"
+              onClick={onRemoveHotel}
+              title="Remove hotel from this trip"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="td-hotel-empty">
+          <p className="td-hotel-empty__msg">No hotel assigned to this trip yet.</p>
+          <Link to={`/hotels?destination=${destId}`}>
+            <Button size="sm">Find Accessible Hotels 🏨</Button>
+          </Link>
+        </div>
+      )}
+    </aside>
+  )
+}
+
 /* ══════════════════════════════════════════
    MAIN TRIP DETAIL PAGE
 ══════════════════════════════════════════ */
@@ -213,6 +281,16 @@ function TripDetail() {
       setError('Failed to regenerate itinerary.')
     } finally {
       setRegen(false)
+    }
+  }
+
+  const handleRemoveHotel = async () => {
+    if (!window.confirm('Remove hotel from this trip?')) return
+    try {
+      await assignHotelToTrip(id, null)
+      fetchData()
+    } catch {
+      setError('Failed to remove hotel.')
     }
   }
 
@@ -357,6 +435,7 @@ function TripDetail() {
           {/* Sidebar */}
           <div className="td-sidebar">
             <TripSummary trip={trip} />
+            <TripHotelCard trip={trip} onRemoveHotel={handleRemoveHotel} />
             <TripScoreCard
               trip={trip}
               scoreData={scoreData}

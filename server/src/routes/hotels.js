@@ -5,6 +5,9 @@ const hotelController = require('../controllers/hotelController');
 // @route   GET /api/hotels
 router.get('/', hotelController.getHotels);
 
+// @route   GET /api/hotels/recommendations
+router.get('/recommendations', hotelController.getHotelRecommendations);
+
 // @route   GET /api/hotels/:id
 router.get('/:id', hotelController.getHotel);
 

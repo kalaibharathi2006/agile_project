@@ -15,6 +15,8 @@ import AttractionDetail from './pages/Destinations/AttractionDetail'
 import MyTrips from './pages/Trips/MyTrips'
 import CreateTrip from './pages/Trips/CreateTrip'
 import TripDetail from './pages/Trips/TripDetail'
+import Hotels from './pages/Hotels/Hotels'
+import HotelDetail from './pages/Hotels/HotelDetail'
 
 import './App.css'
 
@@ -34,6 +36,10 @@ function App() {
           <Route path="/destinations"          element={<Destinations />} />
           <Route path="/destinations/:id"      element={<DestinationDetail />} />
           <Route path="/attractions/:id"       element={<AttractionDetail />} />
+
+          {/* Phase 8: Hotels & Accessible Accommodations (public — browseable without login) */}
+          <Route path="/hotels"                element={<Hotels />} />
+          <Route path="/hotels/:id"            element={<HotelDetail />} />
 
           {/* ── Protected routes ── */}
           <Route

@@ -47,3 +47,10 @@ export const updateItinerary = async (tripId, data) => {
   const response = await api.put(`/trips/${tripId}/itinerary`, data)
   return response.data
 }
+
+/** PUT /api/trips/:id/hotel — assign or remove hotel */
+export const assignHotelToTrip = async (tripId, hotelId) => {
+  const response = await api.put(`/trips/${tripId}/hotel`, { hotelId })
+  return response.data
+}
+
