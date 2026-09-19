@@ -7,6 +7,7 @@ import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import Button from '../../components/Button/Button'
 import { ScorePill } from '../../components/AccessibilityBadge/AccessibilityBadge'
+import ReviewSection from '../../components/Reviews/ReviewSection'
 import './HotelDetail.css'
 
 function HotelDetail() {
@@ -262,6 +263,15 @@ function HotelDetail() {
             </Button>
           </div>
         </aside>
+      </div>
+
+      {/* Phase 10: Reviews & Accessibility Verification */}
+      <div className="container">
+        <ReviewSection
+          entityType="hotel"
+          entityId={hotel._id}
+          entityName={hotel.name}
+        />
       </div>
 
       {/* Assign to Trip Modal */}

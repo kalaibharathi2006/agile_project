@@ -6,6 +6,7 @@ import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import { AttractionScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
 import { ScorePill, AccessibilityFeatures } from '../../components/AccessibilityBadge/AccessibilityBadge'
+import ReviewSection from '../../components/Reviews/ReviewSection'
 import './AttractionDetail.css'
 
 const CATEGORY_ICON = {
@@ -164,6 +165,13 @@ function AttractionDetail() {
             </button>
           </aside>
         </div>
+
+        {/* Phase 10: Reviews & Accessibility Verification */}
+        <ReviewSection
+          entityType="attraction"
+          entityId={attraction._id}
+          entityName={attraction.name}
+        />
       </div>
     </main>
   )

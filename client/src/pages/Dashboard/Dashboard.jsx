@@ -1,12 +1,30 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Button from '../../components/Button/Button'
+import { getTrips } from '../../services/tripService'
+import { getReviews } from '../../services/reviewService'
 import './Dashboard.css'
-
 
 function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const [tripCount, setTripCount] = useState(0)
+  const [reviewCount, setReviewCount] = useState(0)
+
+  useEffect(() => {
+    getTrips()
+      .then((res) => setTripCount(res.count || (res.data ? res.data.length : 0)))
+      .catch(() => {})
+
+    getReviews()
+      .then((res) => {
+        const myReviews = (res.data || []).filter((r) => r.user?._id === user?._id)
+        setReviewCount(myReviews.length)
+      })
+      .catch(() => {})
+  }, [user])
 
   const handleLogout = () => {
     logout()
@@ -19,6 +37,33 @@ function Dashboard() {
     if (hour < 17) return 'Good afternoon'
     return 'Good evening'
   }
+
+  const quickActions = [
+    { id: 'plan-trip-btn',     icon: '🗺️', title: 'Plan a Trip',          desc: 'Create a new accessible itinerary',     path: '/trips/new' },
+    { id: 'browse-dest-btn',   icon: '🏛️', title: 'Explore Destinations',  desc: 'Browse accessible Indian destinations', path: '/destinations' },
+    { id: 'find-hotels-btn',   icon: '🏨', title: 'Find Hotels',           desc: 'Discover wheelchair-friendly stays',    path: '/hotels' },
+    { id: 'my-trips-btn',      icon: '📋', title: 'My Trips',              desc: 'View and manage your trips',           path: '/trips' },
+    { id: 'edit-profile-btn',  icon: '👤', title: 'Edit Profile',          desc: 'Update accessibility preferences',     path: '/profile' },
+    { id: 'write-review-btn',  icon: '⭐', title: 'Write a Review',        desc: 'Share verified accessibility feedback', path: '/destinations' },
+  ]
+
+  if (user?.role === 'admin') {
+    quickActions.unshift({
+      id: 'admin-portal-btn',
+      icon: '🛡️',
+      title: 'Admin Portal',
+      desc: 'Manage users, content, reviews & analytics',
+      path: '/admin',
+      isAdmin: true,
+    })
+  }
+
+  const stats = [
+    { icon: '🗺️', value: tripCount, label: 'Trips Planned' },
+    { icon: '🏛️', value: '8', label: 'Destinations Available' },
+    { icon: '🏨', value: '6', label: 'Partner Hotels' },
+    { icon: '⭐', value: reviewCount, label: 'Reviews Written' },
+  ]
 
   return (
     <main className="dashboard">
@@ -35,16 +80,23 @@ function Dashboard() {
                 {user?.name} 👋
               </h1>
               <p className="dashboard__role">
-                {user?.role === 'admin' ? '🔐 Administrator' : '🌍 Traveler'}
+                {user?.role === 'admin' ? '🛡️ Platform Administrator' : '🌍 Traveler'}
                 {user?.email && (
                   <span className="dashboard__email"> · {user.email}</span>
                 )}
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout} id="dashboard-logout-btn">
-            Logout
-          </Button>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            {user?.role === 'admin' && (
+              <Button size="sm" onClick={() => navigate('/admin')}>
+                Admin Portal ↗
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleLogout} id="dashboard-logout-btn">
+              Logout
+            </Button>
+          </div>
         </section>
 
         {/* Quick Actions */}
@@ -53,11 +105,11 @@ function Dashboard() {
             Quick Actions
           </h2>
           <div className="dashboard__actions-grid">
-            {QUICK_ACTIONS.map((action) => (
+            {quickActions.map((action) => (
               <button
                 key={action.id}
                 id={action.id}
-                className="dashboard__action-card"
+                className={`dashboard__action-card ${action.isAdmin ? 'dashboard__action-card--admin' : ''}`}
                 aria-label={action.title}
                 onClick={() => action.path ? navigate(action.path) : {}}
               >
@@ -66,7 +118,6 @@ function Dashboard() {
                 </span>
                 <span className="dashboard__action-title">{action.title}</span>
                 <span className="dashboard__action-desc">{action.desc}</span>
-                <span className="dashboard__action-badge">Coming soon</span>
               </button>
             ))}
           </div>
@@ -78,7 +129,7 @@ function Dashboard() {
             Your Journey Stats
           </h2>
           <div className="dashboard__stats-grid">
-            {STATS.map((stat) => (
+            {stats.map((stat) => (
               <div key={stat.label} className="dashboard__stat-card">
                 <span className="dashboard__stat-icon" aria-hidden="true">{stat.icon}</span>
                 <div>
@@ -89,54 +140,9 @@ function Dashboard() {
             ))}
           </div>
         </section>
-
-        {/* Phase Progress — Development indicator */}
-        <section className="dashboard__section dashboard__phase-banner" aria-labelledby="phase-heading">
-          <h2 id="phase-heading" className="dashboard__phase-title">
-            🚧 Development Progress
-          </h2>
-          <p className="dashboard__phase-text">
-            Phase 2 complete — Authentication is working! More features are being added phase by phase.
-          </p>
-          <div className="dashboard__phases">
-            {PHASES.map((p) => (
-              <div key={p.name} className={`dashboard__phase-item dashboard__phase-item--${p.status}`}>
-                <span className="dashboard__phase-check" aria-hidden="true">
-                  {p.status === 'done' ? '✅' : p.status === 'current' ? '🔵' : '⚪'}
-                </span>
-                <span>{p.name}</span>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     </main>
   )
 }
-
-const QUICK_ACTIONS = [
-  { id: 'plan-trip-btn',     icon: '🗺️', title: 'Plan a Trip',          desc: 'Create a new accessible itinerary',     path: '/trips/new' },
-  { id: 'browse-dest-btn',   icon: '🏛️', title: 'Explore Destinations',  desc: 'Browse accessible Indian destinations', path: '/destinations' },
-  { id: 'find-hotels-btn',   icon: '🏨', title: 'Find Hotels',           desc: 'Discover wheelchair-friendly stays',    path: null },
-  { id: 'my-trips-btn',      icon: '📋', title: 'My Trips',              desc: 'View and manage your trips',           path: '/trips' },
-  { id: 'edit-profile-btn',  icon: '👤', title: 'Edit Profile',          desc: 'Update accessibility preferences',     path: '/profile' },
-  { id: 'write-review-btn',  icon: '⭐', title: 'Write a Review',        desc: 'Share your accessibility experience',  path: null },
-]
-
-
-const STATS = [
-  { icon: '🗺️', value: '0', label: 'Trips Planned' },
-  { icon: '🏛️', value: '8', label: 'Destinations Available' },
-  { icon: '🏨', value: '6', label: 'Partner Hotels' },
-  { icon: '⭐', value: '0', label: 'Reviews Written' },
-]
-
-const PHASES = [
-  { name: 'Phase 1 — Backend Foundation',  status: 'done'    },
-  { name: 'Phase 2 — Authentication',      status: 'current' },
-  { name: 'Phase 3 — Profile & Preferences', status: 'upcoming' },
-  { name: 'Phase 4 — Destination Discovery', status: 'upcoming' },
-  { name: 'Phase 5 — Trip Planner',        status: 'upcoming' },
-]
 
 export default Dashboard

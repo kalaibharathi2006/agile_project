@@ -8,6 +8,8 @@ const Destination = require('../models/Destination');
 const Attraction = require('../models/Attraction');
 const Hotel = require('../models/Hotel');
 const User = require('../models/User');
+const Partner = require('../models/Partner');
+const Review = require('../models/Review');
 
 const connectDB = require('../config/database');
 
@@ -402,9 +404,9 @@ const seedDatabase = async () => {
     console.log(`✅ Inserted ${insertedHotels.length} hotels`);
 
     // Create admin user
-    const existingAdmin = await User.findOne({ email: 'admin@inclusivetrip.com' });
-    if (!existingAdmin) {
-      await User.create({
+    let adminUser = await User.findOne({ email: 'admin@inclusivetrip.com' });
+    if (!adminUser) {
+      adminUser = await User.create({
         name: 'Admin User',
         email: 'admin@inclusivetrip.com',
         password: 'Admin@12345',
@@ -415,11 +417,136 @@ const seedDatabase = async () => {
       console.log('ℹ️  Admin user already exists');
     }
 
+    // Seed Partners
+    await Partner.deleteMany({});
+    const samplePartners = [
+      {
+        name: 'Accessible Travels India',
+        category: 'transport',
+        description: 'Wheelchair-accessible private vans and trained drivers across Tamil Nadu & Karnataka.',
+        email: 'bookings@accessibletravels.in',
+        phone: '+91 98401 23456',
+        website: 'https://accessibletravels.in',
+        address: '14 GST Road, Guindy',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        isVerified: true,
+        discountCode: 'INCLUSIVE15',
+        discountPercentage: 15,
+        accessibilityFeatures: ['Hydraulic Wheelchair Lift', 'Step-Free Ramp', 'Certified Drivers'],
+        isActive: true,
+      },
+      {
+        name: 'EaseWheel Mobility Rentals',
+        category: 'equipment',
+        description: 'On-demand electric wheelchairs, rollators, and mobility scooters delivered to your hotel.',
+        email: 'support@easewheel.com',
+        phone: '+91 80234 56789',
+        website: 'https://easewheel.com',
+        address: '22 Indiranagar 100 Feet Rd',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        discountCode: 'EASE10',
+        discountPercentage: 10,
+        accessibilityFeatures: ['Motorized Wheelchair Delivery', 'Shower Chairs', '24/7 Roadside Assistance'],
+        isActive: true,
+      },
+      {
+        name: 'Sign & Touch Heritage Guides',
+        category: 'guide',
+        description: 'Specialized heritage tour guides trained in Indian Sign Language (ISL) and tactile explorations.',
+        email: 'info@signtouchguides.org',
+        phone: '+91 94140 11223',
+        website: 'https://signtouchguides.org',
+        address: 'Hawa Mahal Bazaar',
+        city: 'Jaipur',
+        state: 'Rajasthan',
+        isVerified: true,
+        discountCode: 'SIGNGUIDE',
+        discountPercentage: 20,
+        accessibilityFeatures: ['Indian Sign Language', 'Tactile Replicas', 'Audio Descriptions'],
+        isActive: true,
+      },
+      {
+        name: 'Goa Coastal Access Watersports',
+        category: 'other',
+        description: 'Beach accessibility mats, floating beach wheelchairs, and inclusive adaptive ocean experiences.',
+        email: 'aloha@goacoastalaccess.com',
+        phone: '+91 83227 89012',
+        website: 'https://goacoastalaccess.com',
+        address: 'Calangute Beach Road',
+        city: 'Calangute',
+        state: 'Goa',
+        isVerified: true,
+        discountCode: 'BEACHFORALL',
+        discountPercentage: 12,
+        accessibilityFeatures: ['Beach Wheelchair Matting', 'Waterproof Mobility Gear', 'Trained Lifeguards'],
+        isActive: true,
+      },
+    ];
+    const insertedPartners = await Partner.insertMany(samplePartners);
+    console.log(`✅ Inserted ${insertedPartners.length} partners`);
+
+    // Seed Sample Verified Reviews
+    await Review.deleteMany({});
+    const sampleReviews = [
+      {
+        user: adminUser._id,
+        entityType: 'destination',
+        entityId: insertedDestinations[0]._id, // Chennai
+        rating: 5,
+        title: 'Outstanding accessibility at Marina Promenade and Metro',
+        comment: 'Chennai has made commendable strides in urban accessibility. The permanent wooden ramp at Marina Beach is a standout innovation.',
+        accessibilityRating: 5,
+        wheelchairAccessible: true,
+        staffHelpfulness: 5,
+        accessibilityComment: 'Metro stations have step-free elevators from road to platform. Beach ramp extends directly towards the waves with safety railings.',
+        isVerified: true,
+        verifiedBy: adminUser._id,
+        helpfulCount: 7,
+      },
+      {
+        user: adminUser._id,
+        entityType: 'attraction',
+        entityId: insertedAttractions[0]._id,
+        rating: 4,
+        title: 'Clear paths and helpful security attendants',
+        comment: 'Very pleasant experience visiting in the morning hours before crowds gather.',
+        accessibilityRating: 4,
+        wheelchairAccessible: true,
+        staffHelpfulness: 5,
+        accessibilityComment: 'Ramps available at main entrance. Accessible restroom is clean and spacious with grab bars.',
+        isVerified: true,
+        verifiedBy: adminUser._id,
+        helpfulCount: 4,
+      },
+      {
+        user: adminUser._id,
+        entityType: 'hotel',
+        entityId: insertedHotels[0]._id,
+        rating: 5,
+        title: 'Flawless universal accessibility features',
+        comment: 'The hotel staff was exceptionally courteous and attentive to our mobility requirements.',
+        accessibilityRating: 5,
+        wheelchairAccessible: true,
+        staffHelpfulness: 5,
+        accessibilityComment: 'Roll-in shower with sturdy fold-down bench, wide doorways (36 inches), step-free entry from valet to lobby.',
+        isVerified: true,
+        verifiedBy: adminUser._id,
+        helpfulCount: 11,
+      },
+    ];
+    const insertedReviews = await Review.insertMany(sampleReviews);
+    console.log(`✅ Inserted ${insertedReviews.length} verified reviews`);
+
     console.log('\n🎉 Database seeding completed successfully!');
     console.log('📊 Summary:');
     console.log(`   Destinations: ${insertedDestinations.length}`);
     console.log(`   Attractions:  ${insertedAttractions.length}`);
     console.log(`   Hotels:       ${insertedHotels.length}`);
+    console.log(`   Partners:     ${insertedPartners.length}`);
+    console.log(`   Reviews:      ${insertedReviews.length}`);
     console.log('\n🔐 Admin Login:');
     console.log('   Email:    admin@inclusivetrip.com');
     console.log('   Password: Admin@12345');

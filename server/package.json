@@ -7,7 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/utils/seed.js",
-    "test": "echo \"Tests coming in future phases\" && exit 0"
+    "test": "node tests/api.test.js"
   },
   "keywords": [
     "travel",

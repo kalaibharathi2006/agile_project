@@ -31,6 +31,7 @@ const reviewSchema = new mongoose.Schema(
     verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     images: [{ type: String }],
     helpfulCount: { type: Number, default: 0 },
+    helpfulUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

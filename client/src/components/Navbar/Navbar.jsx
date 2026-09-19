@@ -74,6 +74,21 @@ function Navbar() {
               Profile
             </Link>
           )}
+          {user?.role === 'admin' && (
+            <Link
+              to="/admin"
+              className={`navbar__link ${location.pathname.startsWith('/admin') ? 'navbar__link--active' : ''}`}
+              style={{
+                background: '#fef3c7',
+                color: '#92400e',
+                fontWeight: '700',
+                borderRadius: '6px',
+                padding: '0.35rem 0.65rem',
+              }}
+            >
+              🛡️ Admin
+            </Link>
+          )}
         </nav>
 
         {/* Desktop Auth */}
@@ -166,6 +181,16 @@ function Navbar() {
                 onClick={() => setMenuOpen(false)}
               >
                 👤 Profile
+              </Link>
+            )}
+            {user?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="navbar__mobile-link"
+                style={{ color: '#b45309', fontWeight: '700' }}
+                onClick={() => setMenuOpen(false)}
+              >
+                🛡️ Admin Portal
               </Link>
             )}
             <div className="navbar__mobile-divider" />

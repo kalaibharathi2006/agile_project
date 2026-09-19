@@ -6,6 +6,7 @@ import Loading from '../../components/Loading/Loading'
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage'
 import { ScorePill, AccessibilityFeatures } from '../../components/AccessibilityBadge/AccessibilityBadge'
 import { DestinationScoreCard } from '../../components/AccessibilityScoreCard/AccessibilityScoreCard'
+import ReviewSection from '../../components/Reviews/ReviewSection'
 import './DestinationDetail.css'
 
 const DestinationMap = lazy(() => import('../../components/Map/TripMap').then(m => ({ default: m.DestinationMap })))
@@ -306,6 +307,13 @@ function DestinationDetail() {
             </div>
           )}
         </section>
+
+        {/* Phase 10: Reviews & Accessibility Verification */}
+        <ReviewSection
+          entityType="destination"
+          entityId={destination._id}
+          entityName={destination.name}
+        />
       </div>
     </main>
   )

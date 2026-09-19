@@ -17,6 +17,8 @@ import CreateTrip from './pages/Trips/CreateTrip'
 import TripDetail from './pages/Trips/TripDetail'
 import Hotels from './pages/Hotels/Hotels'
 import HotelDetail from './pages/Hotels/HotelDetail'
+import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminRoute from './components/ProtectedRoute/AdminRoute'
 
 import './App.css'
 
@@ -85,6 +87,15 @@ function App() {
             }
           />
 
+          {/* ── Phases 11 & 12: Admin & Partner Management, Analytics ── */}
+          <Route
+            path="/admin/*"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
 
           {/* Catch-all → Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
