@@ -185,7 +185,7 @@ function Hotels() {
       <section className="hotels-hero">
         <div className="container hotels-hero__content">
           <div className="hotels-hero__badge" role="text">
-            <span>🏨</span> Phase 8: Accessible Accommodations
+            <span>🏨</span> Accessible Accommodations
           </div>
           <h1 className="hotels-hero__title">
             Discover Barrier-Free <span className="text-gradient">Hotels & Stays</span>
